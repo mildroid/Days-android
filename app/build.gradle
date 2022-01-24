@@ -15,8 +15,15 @@ android {
         targetSdk 31
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation": "$projectDir/schemas".toString(),
+                        "room.incremental"   : "true"]
+            }
+        }
     }
 
     buildTypes {
@@ -56,6 +63,7 @@ dependencies {
     implementation "androidx.activity:activity-ktx:1.4.0"
     implementation "androidx.preference:preference-ktx:1.1.1"
     implementation "androidx.core:core-splashscreen:1.0.0-beta01"
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
 
     // -- Coroutines
     def coroutines_version = "1.6.0"
@@ -65,7 +73,7 @@ dependencies {
     // -- Kotlinx DateTime
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
 
-    // -- Lifecycle Components (ViewModel, LiveData and ReactiveStreams)
+    // -- Lifecycle Components (ViewModel and LiveData)
     def lifecycle_version = "2.4.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"

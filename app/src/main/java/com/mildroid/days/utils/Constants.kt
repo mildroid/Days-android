@@ -7,5 +7,7 @@ const val CONTENT_TYPE = "Content-Type"
 const val APPLICATION_JSON = "application/json"
 const val ACCEPT_VERSION = "Accept-Version"
 
-const val APP_SETTINGS_PREFERENCES = BuildConfig.APPLICATION_ID + "app_settings_preferences"
-const val APP_ENTRY_STATE = BuildConfig.APPLICATION_ID + "app_entry_state"
+const val APP_DATABASE_NAME = BuildConfig.APPLICATION_ID + ".app_database_name"
+
+const val APP_SETTINGS_PREFERENCES = BuildConfig.APPLICATION_ID + ".app_settings_preferences"
+const val APP_ENTRY_STATE = BuildConfig.APPLICATION_ID + ".app_entry_state"

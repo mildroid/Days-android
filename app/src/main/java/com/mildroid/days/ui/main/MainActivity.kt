@@ -5,10 +5,13 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate.*
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.whenCreated
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -16,10 +19,14 @@ import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
 import com.mildroid.days.R
 import com.mildroid.days.adapter.EventListAdapter
+import com.mildroid.days.adapter.EventListHeaderAdapter
 import com.mildroid.days.adapter.EventPagerAdapter
 import com.mildroid.days.databinding.ActivityMainBinding
 import com.mildroid.days.databinding.ActivityUpcomingEventsBinding
 import com.mildroid.days.domain.Event
+import com.mildroid.days.ui.event.EventActivity
+import com.mildroid.days.utils.log
+import com.mildroid.days.utils.start
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -36,9 +43,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             launch {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    viewModel.photos.collect {
-                        pagerAdapter.submitList(it)
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    viewModel.events.collect {
+                        it.size.log("collected")
+                        collectEvents(it)
                     }
                 }
             }
@@ -49,9 +57,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ViewBinding
     private lateinit var viewType: EntryTime
 
-    private val adapter by lazy {
+    private val listAdapter by lazy {
         EventListAdapter {
-
+            start<EventActivity> {
+//                putExtra("event", it)
+            }
         }
     }
 
@@ -96,6 +106,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun collectEvents(events: List<Event>) {
+        events.size.log("onFun")
+        when (viewType) {
+            EntryTime.FIRST -> pagerAdapter.submitList(events)
+            EntryTime.LAST -> listAdapter.submitList(events)
+            EntryTime.NONE -> {}
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition {
@@ -107,42 +126,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ActivityMainBinding.init() {
+        val headerAdapter = EventListHeaderAdapter()
+        val supAdapter = ConcatAdapter(headerAdapter, listAdapter)
+
         mainList.apply {
-            adapter = this@MainActivity.adapter
+            adapter = supAdapter
             layoutManager = LinearLayoutManager(this@MainActivity)
         }
 
-        mainBottomAppBar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.main_menu_add -> true
-                else -> false
-            }
-        }
-
-        mainBottomAppBar.setNavigationOnClickListener {
-//            start<FragmentContainerActivity>()
-            when (getDefaultNightMode()) {
-                MODE_NIGHT_FOLLOW_SYSTEM, MODE_NIGHT_YES -> setDefaultNightMode(MODE_NIGHT_NO)
-                MODE_NIGHT_NO -> setDefaultNightMode(MODE_NIGHT_YES)
-            }
-
-            delegate.applyDayNight()
-        }
     }
 
     private fun ActivityUpcomingEventsBinding.init() {
         initPager()
 
         upcomingSubmit.setOnClickListener {
+            viewModel.saveEvents(selectedUpcomingEvents)
 
+            start<MainActivity> {
+                /*ActivityOptionsCompat
+                    .makeSceneTransitionAnimation(this@MainActivity, )*/
+            }
         }
-
-
     }
 
     private fun ActivityUpcomingEventsBinding.initPager() {
-//        pagerAdapter.submitList(UpcomingEvents.events())
-
         upcomingPager.apply {
             this.adapter = pagerAdapter
             clipToPadding = false

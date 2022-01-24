@@ -3,4 +3,5 @@
     <string name="skip">Skip</string>
     <string name="add_events_starter_msg">Lets add some events to get started!</string>
     <string name="continue_">Continue</string>
+    <string name="upcoming_events">Upcoming Events</string>
 </resources>

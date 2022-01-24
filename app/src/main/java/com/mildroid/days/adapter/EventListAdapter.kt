@@ -17,6 +17,7 @@ import com.mildroid.days.R
 import com.mildroid.days.databinding.EventListItemBinding
 import com.mildroid.days.domain.Event
 import com.mildroid.days.utils.EventListDiffCallback
+import com.mildroid.days.utils.daysUntilNow
 
 class EventListAdapter(
     private val onItemClicked: (Event) -> Unit
@@ -52,14 +53,15 @@ class EventListAdapter(
         }
 
         internal fun bind(event: Event) {
+            this.event = event
+
             binding.run {
                 eventListItemTitle.text = event.title
-                eventListItemDate.text = event.date.toString()
+                eventListItemDate.text = "${event.date.daysUntilNow().inWholeDays} Days"
 
-                /*eventListItemImage.addView(
-                    eventImage(itemView.context, event.image, imageHeight)
-                    *//*.setImageDrawable(R.drawable.ic_launcher_background)*//*
-                )*/
+                eventListItemImage.addView(
+                    eventImage(itemView.context, event.image!!, imageHeight)
+                )
             }
         }
 
@@ -80,6 +82,8 @@ class EventListAdapter(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 height
             )
+
+            transitionName = "event_image"
         }
 
         companion object {

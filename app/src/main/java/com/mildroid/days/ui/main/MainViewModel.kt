@@ -10,6 +10,7 @@ import com.mildroid.days.domain.Event
 import com.mildroid.days.utils.APP_ENTRY_STATE
 import com.mildroid.days.utils.UpcomingEvents
 import com.mildroid.days.utils.dataStore
+import com.mildroid.days.utils.log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -24,7 +25,8 @@ class MainViewModel @Inject constructor(
 
 ) : AndroidViewModel(application) {
 
-    val photos = MutableStateFlow(listOf<Event>())
+    private val _events = MutableStateFlow(listOf<Event>())
+    val events: StateFlow<List<Event>> get() = _events
 
     private val _viewType = MutableStateFlow(EntryTime.NONE)
     val viewType: StateFlow<EntryTime> get() = _viewType
@@ -43,32 +45,43 @@ class MainViewModel @Inject constructor(
             it[entryKey] ?: true
         }
 
-/*
-        if (!isFirstEntry.first()) {
-            upcomingEvents()
+        if (isFirstEntry.first()) {
             _viewType.value = EntryTime.FIRST
+            upcomingEvents()
 
             context.dataStore.edit {
                 it[entryKey] = false
             }
         } else {
-            _viewType.value = EntryTime.FIRS
-            areWeReady.value = false
+            _viewType.value = EntryTime.LAST
+            events()
         }
-*/
-
-        upcomingEvents()
-        _viewType.value = EntryTime.FIRST
-
 //        none of these is needed any more!
         this.cancel()
     }
 
     private fun upcomingEvents() = viewModelScope.launch {
-        photos.value = UpcomingEvents.byDaysRemaining()
+        _events.value = UpcomingEvents.byDaysRemaining()
 
         delay(500)
         areWeReady.value = false
     }
 
+    private fun events() = viewModelScope.launch {
+        val events = repository
+            .events()
+
+        _events.value = events.first()
+
+        delay(500)
+        areWeReady.value = false
+    }
+
+    fun saveEvents(events: List<Event>) = viewModelScope.launch {
+        if (events.isNotEmpty()) {
+            repository
+                .saveEvents(events)
+
+        }
+    }
 }

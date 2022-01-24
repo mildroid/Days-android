@@ -11,7 +11,7 @@ object UpcomingEvents {
         return listOf(
             Event(
                 title = "New Year",
-                des = "New Year's Day",
+                description = "New Year's Day",
                 date = safeLocalDate(1, Month.JANUARY),
                 image = "https://images.unsplash.com/photo-1546272192-c19942fa8b26?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&dl=andreas-dress-wtxPbYHxa5I-unsplash.jpg&w=1920",
                 type = EventType.PUBLIC
