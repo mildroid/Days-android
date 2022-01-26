@@ -4,4 +4,10 @@
     <string name="add_events_starter_msg">Lets add some events to get started!</string>
     <string name="continue_">Continue</string>
     <string name="upcoming_events">Upcoming Events</string>
+    <string name="options">Options</string>
+    <string name="edit_title">Edit Title</string>
+    <string name="edit_date">Edit Date</string>
+    <string name="change_image">Change Image</string>
+    <string name="archive">Archive</string>
+    <string name="delete">Delete</string>
 </resources>

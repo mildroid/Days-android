@@ -14,9 +14,19 @@
         <!-- Customize your theme here. -->
         <item name="android:windowTranslucentStatus">true</item>
         <item name="fontFamily">@font/product_sans_regular</item>
+        <item name="bottomSheetDialogTheme">@style/RoundedBottomSheetDialog</item>
 
-        <item name="android:windowContentTransitions">true</item>
+<!--        <item name="android:windowContentTransitions">true</item>-->
     </style>
+
+<!--
+    <style name="Theme.MainTransition" parent="Theme.Days" tools:targetApi="lollipop">
+        <item name="android:windowSharedElementEnterTransition">@transition/change_image_transform
+        </item>
+        <item name="android:windowSharedElementExitTransition">@transition/change_image_transform
+        </item>
+    </style>
+-->
 
     <style name="Theme.Days.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/semi_black</item>

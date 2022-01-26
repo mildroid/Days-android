@@ -13,9 +13,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Days.Starting">
         <activity
-            android:name=".ui.event.EventActivity"
+            android:name=".ui.unsplash.SearchUnsplashActivity"
             android:exported="false"
             android:theme="@style/Theme.Days"/>
+        <activity
+            android:name=".ui.event.EventActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Days" />
         <activity
             android:name=".ui.FragmentContainerActivity"
             android:exported="false" />

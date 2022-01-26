@@ -1,5 +1,6 @@
 package com.mildroid.days.ui.main
 
+import android.app.ActivityOptions
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
@@ -45,7 +46,6 @@ class MainActivity : AppCompatActivity() {
             launch {
                 repeatOnLifecycle(Lifecycle.State.RESUMED) {
                     viewModel.events.collect {
-                        it.size.log("collected")
                         collectEvents(it)
                     }
                 }
@@ -58,9 +58,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewType: EntryTime
 
     private val listAdapter by lazy {
-        EventListAdapter {
+        EventListAdapter { event ->
+            event.id.log("id")
             start<EventActivity> {
-//                putExtra("event", it)
+                putExtra("event_image", event.image)
+                putExtra("event_title", event.title)
+                putExtra("event_date", event.date.toString())
             }
         }
     }
@@ -126,7 +129,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ActivityMainBinding.init() {
-        val headerAdapter = EventListHeaderAdapter()
+        val headerAdapter = EventListHeaderAdapter {
+//            start<AddEventActivity>()
+        }
         val supAdapter = ConcatAdapter(headerAdapter, listAdapter)
 
         mainList.apply {
@@ -142,10 +147,8 @@ class MainActivity : AppCompatActivity() {
         upcomingSubmit.setOnClickListener {
             viewModel.saveEvents(selectedUpcomingEvents)
 
-            start<MainActivity> {
-                /*ActivityOptionsCompat
-                    .makeSceneTransitionAnimation(this@MainActivity, )*/
-            }
+            start<MainActivity>()
+            finish()
         }
     }
 

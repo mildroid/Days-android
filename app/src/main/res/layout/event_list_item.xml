@@ -28,7 +28,8 @@
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:text="Hello How are yo"
-            android:textSize="24sp"/>
+            android:textSize="24sp"
+            android:transitionName="event_title"/>
 
         <TextView
             android:id="@+id/event_list_item_date"
@@ -36,6 +37,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:textSize="20sp"
+            android:transitionName="event_date"
             android:layout_marginTop="8dp"
             android:text="this is 12 Jan"/>
 
