@@ -57,7 +57,7 @@ class EventListAdapter(
 
             binding.run {
                 eventListItemTitle.text = event.title
-                eventListItemDate.text = "${event.date.daysUntilNow().inWholeDays} Days"
+                eventListItemDate.text = "in ${event.date.daysUntilNow().inWholeDays} Days"
 
                 eventListItemImage.addView(
                     eventImage(itemView.context, event.image!!, imageHeight)
@@ -73,7 +73,7 @@ class EventListAdapter(
             Glide
                 .with(this)
                 .applyDefaultRequestOptions(
-                    RequestOptions().transform(CenterCrop(), RoundedCorners(12))
+                    RequestOptions().transform(CenterCrop(), RoundedCorners(16))
                 )
                 .load(image)
                 .into(this)

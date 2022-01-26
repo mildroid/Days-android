@@ -57,16 +57,6 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
     }
 
     private fun ActivitySearchUnsplashBinding.init() {
-        val headerAdapter = ListHeaderAdapter(getString(R.string.choose_image)) {
-            onBackPressed()
-        }
-
-        val searchHeader = SearchHeaderAdapter {
-            it.log()
-        }
-
-        val supAdapter = ConcatAdapter(headerAdapter, searchHeader, photoAdapter)
-
         val gridLayoutManager = GridLayoutManager(
             this@UnsplashPhotoListActivity,
             3
@@ -83,8 +73,20 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         }
 
         searchUnsplashList.apply {
-            adapter = supAdapter
+            adapter = providerAdapter()
             layoutManager = gridLayoutManager
         }
+    }
+
+    private fun providerAdapter(): ConcatAdapter {
+        val headerAdapter = ListHeaderAdapter(getString(R.string.choose_image)) {
+            onBackPressed()
+        }
+
+        val searchHeader = SearchHeaderAdapter {
+            it.log()
+        }
+
+        return ConcatAdapter(headerAdapter, searchHeader, photoAdapter)
     }
 }

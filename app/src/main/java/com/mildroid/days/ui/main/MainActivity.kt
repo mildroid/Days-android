@@ -21,6 +21,7 @@ import com.mildroid.days.adapter.EventPagerAdapter
 import com.mildroid.days.databinding.ActivityMainBinding
 import com.mildroid.days.databinding.ActivityUpcomingEventsBinding
 import com.mildroid.days.domain.Event
+import com.mildroid.days.ui.add.AddEventActivity
 import com.mildroid.days.ui.event.EventActivity
 import com.mildroid.days.utils.log
 import com.mildroid.days.utils.start
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun ActivityMainBinding.init() {
         val headerAdapter = EventListHeaderAdapter {
-//            start<AddEventActivity>()
+            start<AddEventActivity>()
         }
         val supAdapter = ConcatAdapter(headerAdapter, listAdapter)
 
