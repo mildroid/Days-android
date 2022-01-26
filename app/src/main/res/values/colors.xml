@@ -25,10 +25,11 @@
     <color name="low_ripple_black">#141514</color>
     <color name="semi_black">#01000C</color>
 
+
     <color name="primary_text_color">@color/semi_black</color>
     <color name="secondary_text_color">@color/grey700</color>
     <color name="toolbar_color">@color/colorPrimary</color>
-    <color name="tab_selected_text_color">@color/semi_black</color>
+    <color name="text_color_reverse">@color/grey200</color>
 
 
 </resources>
