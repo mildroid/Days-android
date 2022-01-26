@@ -12,9 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.whenResumed
 import com.mildroid.days.databinding.ActivityAddEventBinding
+import com.mildroid.days.ui.unsplash.UnsplashPhotoListActivity
 import com.mildroid.days.utils.ADD_EVENT_INITIAL_DATE
 import com.mildroid.days.utils.daysUntilNow
 import com.mildroid.days.utils.log
+import com.mildroid.days.utils.start
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -71,7 +73,9 @@ class AddEventActivity : AppCompatActivity() {
     private fun ActivityAddEventBinding.init() {
         initDatePicker()
 
-        addEventNext.background.colorFilter.log()
+        addEventNext.setOnClickListener {
+            start<UnsplashPhotoListActivity>()
+        }
     }
 
     private fun ActivityAddEventBinding.initDatePicker(

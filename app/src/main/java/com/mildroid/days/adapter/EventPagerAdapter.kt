@@ -58,7 +58,7 @@ class EventPagerAdapter(
 
             binding.run {
                 eventPagerItemTitle.text = event.title
-                eventPagerItemDate.text = "${event.date.daysUntilNow().inWholeDays} Days"
+                eventPagerItemDate.text = "in ${event.date.daysUntilNow().inWholeDays} Days"
 
 //                eventPagerItemImage.background = ColorDrawable(Color.parseColor(event.photo?.color))
                 eventPagerItemImage.loadImage(event.image, event.photo)

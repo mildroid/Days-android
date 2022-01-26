@@ -46,7 +46,7 @@ class EventActivity : AppCompatActivity() {
 
             binding.run {
                 eventTitle.text = title
-                eventDate.text = "${date.daysUntilNow().inWholeDays} Days"
+                eventDate.text = "in ${date.daysUntilNow().inWholeDays} Days"
 
                 eventImage.load(image!!) {
 //                    supportStartPostponedEnterTransition()
@@ -114,7 +114,7 @@ class EventActivity : AppCompatActivity() {
                 ObjectAnimator.ofFloat(
                     this@translator,
                     View.TRANSLATION_Y,
-                    -260F
+                    -380F
                 ).apply {
                     interpolator = FastOutSlowInInterpolator()
                     duration = 1000
