@@ -13,19 +13,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Days.Starting">
         <activity
-            android:name=".ui.unsplash.SearchUnsplashActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Days" />
-        <activity
-            android:name=".ui.add.AddEventActivity"
+            android:name=".ui.unsplash.UnsplashPhotoListActivity"
             android:exported="true"
-            android:theme="@style/Theme.Days"
-            android:windowSoftInputMode="stateVisible">
+            android:theme="@style/Theme.Days" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.add.AddEventActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Days"
+            android:windowSoftInputMode="stateVisible">
+
         </activity>
         <activity
             android:name=".ui.event.EventActivity"

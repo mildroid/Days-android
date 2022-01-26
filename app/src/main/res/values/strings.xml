@@ -10,4 +10,6 @@
     <string name="change_image">Change Image</string>
     <string name="archive">Archive</string>
     <string name="delete">Delete</string>
+    <string name="choose_image">Choose Image</string>
+    <string name="search_unsplash">Search Unsplash</string>
 </resources>
