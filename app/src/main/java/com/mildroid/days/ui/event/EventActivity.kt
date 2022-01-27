@@ -57,35 +57,6 @@ class EventActivity : AppCompatActivity() {
     }
 
     private fun ImageView.load(url: String, onLoadingFinished: () -> Unit = {}) {
-/*
-        val listener = object : RequestListener<Drawable> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                onLoadingFinished.invoke()
-
-                return false
-            }
-
-            override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
-                target: Target<Drawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                onLoadingFinished.invoke()
-
-                return false
-            }
-        }
-*/
-
-//        val requestOptions = RequestOptions.noTransformation()
-
         GlideApp.with(this)
             .load(url)
 //            .apply(requestOptions)
