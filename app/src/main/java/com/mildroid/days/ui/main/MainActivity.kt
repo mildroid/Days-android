@@ -21,8 +21,12 @@ import com.mildroid.days.adapter.EventPagerAdapter
 import com.mildroid.days.databinding.ActivityMainBinding
 import com.mildroid.days.databinding.ActivityUpcomingEventsBinding
 import com.mildroid.days.domain.Event
+import com.mildroid.days.domain.state.EntryTime
+import com.mildroid.days.domain.state.MainStateEvent
+import com.mildroid.days.domain.state.MainViewState
 import com.mildroid.days.ui.add.AddEventActivity
 import com.mildroid.days.ui.event.EventActivity
+import com.mildroid.days.utils.MAIN_VIEW_TYPE
 import com.mildroid.days.utils.log
 import com.mildroid.days.utils.start
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,16 +39,8 @@ class MainActivity : AppCompatActivity() {
     init {
         lifecycleScope.launch {
             launch {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    entryHandler()
-                }
-            }
-
-            launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    viewModel.events.collect {
-                        collectEvents(it)
-                    }
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.viewState.collect(::stateHandler)
                 }
             }
         }
@@ -67,52 +63,12 @@ class MainActivity : AppCompatActivity() {
 
     private val pagerAdapter by lazy {
         EventPagerAdapter {
-            if (selectedUpcomingEvents.contains(it)) {
-                selectedUpcomingEvents.remove(it)
+            (binding as ActivityUpcomingEventsBinding).upcomingSubmit
+                .text = getString(R.string.continue_)
 
-                if (selectedUpcomingEvents.isEmpty())
-                    (binding as ActivityUpcomingEventsBinding).upcomingSubmit.text =
-                        getString(R.string.skip)
-
-            } else {
-                selectedUpcomingEvents.add(it)
-                (binding as ActivityUpcomingEventsBinding).run {
-                    this.upcomingSubmit.text = getString(R.string.continue_)
-                }
-            }
+            viewModel.onEvent(MainStateEvent.SelectedEvent(it))
         }
-    }
 
-    private val selectedUpcomingEvents: MutableList<Event> by lazyOf(mutableListOf())
-
-    private suspend fun entryHandler() {
-        viewModel.viewType.collect {
-            this.viewType = it
-
-            when (it) {
-                EntryTime.FIRST -> {
-                    binding = ActivityUpcomingEventsBinding.inflate(layoutInflater)
-                    (binding as ActivityUpcomingEventsBinding).init()
-                }
-                EntryTime.LAST -> {
-                    binding = ActivityMainBinding.inflate(layoutInflater)
-                    (binding as ActivityMainBinding).init()
-                }
-                EntryTime.NONE -> {}
-            }
-
-            if (it == EntryTime.FIRST || it == EntryTime.LAST)
-                setContentView(binding.root)
-        }
-    }
-
-    private fun collectEvents(events: List<Event>) {
-        events.size.log("onFun")
-        when (viewType) {
-            EntryTime.FIRST -> pagerAdapter.submitList(events)
-            EntryTime.LAST -> listAdapter.submitList(events)
-            EntryTime.NONE -> {}
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,6 +79,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         super.onCreate(savedInstanceState)
+        handleRotation(savedInstanceState)
+
+        viewModel.onEvent(MainStateEvent.Init)
     }
 
     private fun ActivityMainBinding.init() {
@@ -142,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         initPager()
 
         upcomingSubmit.setOnClickListener {
-            viewModel.saveEvents(selectedUpcomingEvents)
+            viewModel.onEvent(MainStateEvent.SaveEvents)
 
             start<MainActivity>()
             finish()
@@ -169,10 +128,58 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-}
+    private fun stateHandler(state: MainViewState) {
+        state.log()
+        when (state) {
+            is MainViewState.Data -> collectEvents(state.events)
+            MainViewState.EmptyData -> emptyDateHandler()
+            MainViewState.Loading -> {}
+            is MainViewState.ViewType -> entryHandler(state.entryTime)
+        }
+    }
 
-enum class EntryTime {
-    FIRST,
-    LAST,
-    NONE
+    private fun emptyDateHandler() {
+        when (viewType) {
+            EntryTime.FIRST -> (binding as ActivityUpcomingEventsBinding).upcomingSubmit
+                .text = getString(R.string.skip)
+
+            EntryTime.LAST -> TODO()
+        }
+    }
+
+    private fun collectEvents(events: List<Event>) {
+        when (viewType) {
+            EntryTime.FIRST -> pagerAdapter.submitList(events)
+            EntryTime.LAST -> listAdapter.submitList(events)
+        }
+    }
+
+    private fun entryHandler(type: EntryTime) {
+        this.viewType = type
+
+        when (type) {
+            EntryTime.FIRST -> {
+                binding = ActivityUpcomingEventsBinding.inflate(layoutInflater)
+                (binding as ActivityUpcomingEventsBinding).init()
+            }
+            EntryTime.LAST -> {
+                binding = ActivityMainBinding.inflate(layoutInflater)
+                (binding as ActivityMainBinding).init()
+            }
+        }
+
+        setContentView(binding.root)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(MAIN_VIEW_TYPE, viewType.toString())
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun handleRotation(savedInstanceState: Bundle?) {
+        savedInstanceState?.let {
+            viewType = EntryTime.valueOf(it.getString(MAIN_VIEW_TYPE)!!)
+            entryHandler(viewType)
+        }
+    }
 }

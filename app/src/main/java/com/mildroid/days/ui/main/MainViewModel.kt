@@ -7,10 +7,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mildroid.days.Repository
 import com.mildroid.days.domain.Event
-import com.mildroid.days.utils.APP_ENTRY_STATE
-import com.mildroid.days.utils.UpcomingEvents
-import com.mildroid.days.utils.dataStore
-import com.mildroid.days.utils.log
+import com.mildroid.days.domain.state.EntryTime
+import com.mildroid.days.domain.state.MainStateEvent
+import com.mildroid.days.domain.state.MainViewState
+import com.mildroid.days.utils.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -25,35 +25,30 @@ class MainViewModel @Inject constructor(
 
 ) : AndroidViewModel(application) {
 
-    private val _events = MutableStateFlow(listOf<Event>())
-    val events: StateFlow<List<Event>> get() = _events
-
-    private val _viewType = MutableStateFlow(EntryTime.NONE)
-    val viewType: StateFlow<EntryTime> get() = _viewType
+    private val _viewState: MutableStateFlow<MainViewState> =
+        MutableStateFlow(MainViewState.Loading)
+    val viewState: StateFlow<MainViewState> get() = _viewState
 
     val areWeReady = MutableStateFlow(true)
 
-    init {
-        viewType()
-    }
+    private val selectedEvents: MutableList<Event> by lazyOf(mutableListOf())
 
     private fun viewType() = viewModelScope.launch {
         val context = getApplication<Application>().applicationContext
 
-        val entryKey = booleanPreferencesKey(APP_ENTRY_STATE)
         val isFirstEntry = context.dataStore.data.map {
-            it[entryKey] ?: true
+            it[booleanPreferencesKey(APP_ENTRY_STATE)] ?: true
         }
 
         if (isFirstEntry.first()) {
-            _viewType.value = EntryTime.FIRST
+            _viewState.value = MainViewState.ViewType(EntryTime.FIRST)
             upcomingEvents()
 
-            context.dataStore.edit {
+            /*context.dataStore.edit {
                 it[entryKey] = false
-            }
+            }*/
         } else {
-            _viewType.value = EntryTime.LAST
+            _viewState.value = MainViewState.ViewType(EntryTime.LAST)
             events()
         }
 //        none of these is needed any more!
@@ -61,27 +56,55 @@ class MainViewModel @Inject constructor(
     }
 
     private fun upcomingEvents() = viewModelScope.launch {
-        _events.value = UpcomingEvents.byDaysRemaining()
+        _viewState.value = MainViewState.Data(UpcomingEvents.byDaysRemaining())
 
-        delay(500)
-        areWeReady.value = false
+        weAreReady()
     }
 
     private fun events() = viewModelScope.launch {
         val events = repository
             .events()
 
-        _events.value = events.first()
+        events.first().run {
+            _viewState.value = if (isNotEmpty())
+                MainViewState.Data(this.byDaysRemaining())
+            else
+                MainViewState.EmptyData
+        }
 
+        weAreReady()
+    }
+
+    private suspend fun weAreReady() {
         delay(500)
         areWeReady.value = false
     }
 
-    fun saveEvents(events: List<Event>) = viewModelScope.launch {
+    private fun saveEvents(events: List<Event>) = viewModelScope.launch {
         if (events.isNotEmpty()) {
             repository
                 .saveEvents(events)
 
+        }
+    }
+
+    private fun addSelectedEvent(event: Event) {
+        if (selectedEvents.contains(event)) {
+            selectedEvents.remove(event)
+
+            if (selectedEvents.isEmpty())
+                _viewState.value = MainViewState.EmptyData
+
+        } else {
+            selectedEvents.add(event)
+        }
+    }
+
+    fun onEvent(event: MainStateEvent) {
+        when (event) {
+            MainStateEvent.Init -> viewType()
+            MainStateEvent.SaveEvents -> saveEvents(selectedEvents)
+            is MainStateEvent.SelectedEvent -> addSelectedEvent(event.event)
         }
     }
 }

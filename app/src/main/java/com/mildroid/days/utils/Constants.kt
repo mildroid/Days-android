@@ -13,3 +13,4 @@ const val APP_SETTINGS_PREFERENCES = BuildConfig.APPLICATION_ID + ".app_settings
 const val APP_ENTRY_STATE = BuildConfig.APPLICATION_ID + ".app_entry_state"
 
 const val ADD_EVENT_INITIAL_DATE = BuildConfig.APPLICATION_ID + ".AddEventActivity.initial_date"
+const val MAIN_VIEW_TYPE = BuildConfig.APPLICATION_ID + ".MainActivity.view_type"

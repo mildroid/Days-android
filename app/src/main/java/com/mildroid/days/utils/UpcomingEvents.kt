@@ -85,8 +85,5 @@ object UpcomingEvents {
         )
     }
 
-    fun byDaysRemaining() = events().sortedBy {
-        it.date.daysUntilNow()
-    }
-
+    fun byDaysRemaining() = events().byDaysRemaining()
 }

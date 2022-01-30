@@ -10,6 +10,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
+import com.mildroid.days.domain.Event
 
 fun Any?.log(msg: Any? = "", tag: String = "bandOfBrothers") {
     Log.d(tag, "$msg -> $this")
@@ -23,6 +24,12 @@ inline fun <reified A : Activity> Context.start(
         Intent(this, A::class.java).apply(configIntent),
         options?.toBundle()
     )
+}
+
+fun Iterable<Event>.byDaysRemaining(): List<Event> {
+    return this.sortedBy {
+        it.date.daysUntilNow()
+    }
 }
 
 // dp to px converter
