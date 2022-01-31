@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mildroid.days.Repository
 import com.mildroid.days.domain.Photo
+import com.mildroid.days.domain.state.UnsplashPhotoListStateEvent
+import com.mildroid.days.domain.state.UnsplashPhotoListViewState
 import com.mildroid.days.utils.log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,32 +24,32 @@ class UnsplashPhotoListViewHolder @Inject constructor(
 
     val viewState: StateFlow<UnsplashPhotoListViewState> get() = _viewState
 
-    private fun photos(page: Int) = viewModelScope.launch {
-        val result = repository
-            .photoList(page)
+    private var lastQuery: String? = null
 
-        _viewState.value = UnsplashPhotoListViewState.Data(result)
+    private fun photos(page: Int, query: String?) = viewModelScope.launch {
+        if (query != lastQuery || query == null) {
+            lastQuery = query
+
+            val result: List<Photo> = if (query == null || query == "") {
+                repository
+                    .photoList(page)
+
+            } else {
+                lastQuery = query
+
+                repository
+                    .searchPhotos(query, page)
+            }
+
+            _viewState.value = UnsplashPhotoListViewState.Data(result)
+        }
+
     }
 
     fun onEvent(event: UnsplashPhotoListStateEvent) {
         when (event) {
-            is UnsplashPhotoListStateEvent.Fetch -> photos(event.page)
+            is UnsplashPhotoListStateEvent.Fetch -> photos(event.page, event.query?.trim())
         }
     }
 
-}
-
-sealed class UnsplashPhotoListViewState {
-
-    object Loading : UnsplashPhotoListViewState()
-    data class Data(val photos: List<Photo>?) : UnsplashPhotoListViewState()
-    data class Error(val t: Throwable) : UnsplashPhotoListViewState()
-}
-
-sealed class UnsplashPhotoListStateEvent {
-
-    data class Fetch(
-        val page: Int = 1,
-        val query: String? = null
-    ) : UnsplashPhotoListStateEvent()
 }

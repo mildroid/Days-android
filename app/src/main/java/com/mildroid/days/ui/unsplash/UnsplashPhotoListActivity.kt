@@ -1,25 +1,25 @@
 package com.mildroid.days.ui.unsplash
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.whenStarted
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.mildroid.days.R
 import com.mildroid.days.adapter.ListHeaderAdapter
 import com.mildroid.days.adapter.PhotoListAdapter
 import com.mildroid.days.adapter.SearchHeaderAdapter
 import com.mildroid.days.databinding.ActivitySearchUnsplashBinding
+import com.mildroid.days.domain.state.UnsplashPhotoListStateEvent
+import com.mildroid.days.domain.state.UnsplashPhotoListViewState
 import com.mildroid.days.utils.fade
 import com.mildroid.days.utils.log
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
@@ -86,7 +86,10 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         }
 
         val searchHeader = SearchHeaderAdapter {
-            it.log()
+            lifecycleScope.launchWhenResumed {
+                delay(1000)
+                viewModel.onEvent(UnsplashPhotoListStateEvent.Fetch(page, it.toString()))
+            }
         }
 
         return ConcatAdapter(headerAdapter, searchHeader, photoAdapter)
