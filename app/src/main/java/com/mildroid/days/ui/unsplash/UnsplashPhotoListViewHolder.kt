@@ -17,20 +17,37 @@ class UnsplashPhotoListViewHolder @Inject constructor(
 
 ) : ViewModel() {
 
-    init {
-        photos()
-    }
+    private val _viewState: MutableStateFlow<UnsplashPhotoListViewState> =
+        MutableStateFlow(UnsplashPhotoListViewState.Loading)
 
-    private val _photos = MutableStateFlow<List<Photo>>(listOf())
-    val photos: StateFlow<List<Photo>> get() = _photos
+    val viewState: StateFlow<UnsplashPhotoListViewState> get() = _viewState
 
-    private fun photos() = viewModelScope.launch {
-        "photo req sent".log()
+    private fun photos(page: Int) = viewModelScope.launch {
         val result = repository
-            .photoList()
+            .photoList(page)
 
-        result.size.log("result")
-        _photos.value = result
+        _viewState.value = UnsplashPhotoListViewState.Data(result)
     }
 
+    fun onEvent(event: UnsplashPhotoListStateEvent) {
+        when (event) {
+            is UnsplashPhotoListStateEvent.Fetch -> photos(event.page)
+        }
+    }
+
+}
+
+sealed class UnsplashPhotoListViewState {
+
+    object Loading : UnsplashPhotoListViewState()
+    data class Data(val photos: List<Photo>?) : UnsplashPhotoListViewState()
+    data class Error(val t: Throwable) : UnsplashPhotoListViewState()
+}
+
+sealed class UnsplashPhotoListStateEvent {
+
+    data class Fetch(
+        val page: Int = 1,
+        val query: String? = null
+    ) : UnsplashPhotoListStateEvent()
 }

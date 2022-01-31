@@ -17,6 +17,7 @@ import com.mildroid.days.adapter.ListHeaderAdapter
 import com.mildroid.days.adapter.PhotoListAdapter
 import com.mildroid.days.adapter.SearchHeaderAdapter
 import com.mildroid.days.databinding.ActivitySearchUnsplashBinding
+import com.mildroid.days.utils.fade
 import com.mildroid.days.utils.log
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -29,9 +30,7 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         lifecycleScope.launch {
             launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.photos.collect {
-                        photoAdapter.submitList(it)
-                    }
+                    viewModel.viewState.collect(::stateHandler)
                 }
             }
         }
@@ -49,11 +48,14 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         }
     }
 
+    private var page: Int = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
         binding.init()
+        viewModel.onEvent(UnsplashPhotoListStateEvent.Fetch(page = this.page))
     }
 
     private fun ActivitySearchUnsplashBinding.init() {
@@ -72,7 +74,7 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
             }
         }
 
-        searchUnsplashList.apply {
+        unsplashPhotoList.apply {
             adapter = providerAdapter()
             layoutManager = gridLayoutManager
         }
@@ -89,4 +91,22 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
 
         return ConcatAdapter(headerAdapter, searchHeader, photoAdapter)
     }
+
+    private fun stateHandler(state: UnsplashPhotoListViewState) {
+        when (state) {
+            is UnsplashPhotoListViewState.Data -> {
+                loading(false)
+                photoAdapter.submitList(state.photos)
+            }
+            is UnsplashPhotoListViewState.Error -> {
+                loading(false)
+            }
+            UnsplashPhotoListViewState.Loading -> loading(true)
+        }
+    }
+
+    private fun loading(really: Boolean) {
+        binding.unsplashPhotoListProgressbar.fade(really, binding.root)
+    }
+
 }

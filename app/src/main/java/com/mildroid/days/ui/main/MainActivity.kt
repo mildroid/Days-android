@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
             EntryTime.FIRST -> (binding as ActivityUpcomingEventsBinding).upcomingSubmit
                 .text = getString(R.string.skip)
 
-            EntryTime.LAST -> TODO()
+            EntryTime.LAST -> {}
         }
     }
 

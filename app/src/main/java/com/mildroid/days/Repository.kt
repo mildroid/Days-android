@@ -12,7 +12,7 @@ class Repository @Inject constructor(
 
     suspend fun photo(id: String) = api.photo(id)
 
-    suspend fun photoList() = api.photoList()
+    suspend fun photoList(page: Int) = api.photoList()
 
     suspend fun saveEvents(events: List<Event>) = dao.saveEvents(events)
 

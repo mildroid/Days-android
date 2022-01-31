@@ -3,6 +3,7 @@ package com.mildroid.days.remote
 import com.mildroid.days.domain.Photo
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface Api {
 
@@ -12,5 +13,8 @@ interface Api {
     ) : Photo
 
     @GET("photos/")
-    suspend fun photoList(): List<Photo>
+    suspend fun photoList(
+        /*@Query("page") page: Int,
+        @Query("per_page") perPage: Int = 20*/
+    ): List<Photo>
 }

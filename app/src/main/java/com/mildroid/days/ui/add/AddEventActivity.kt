@@ -76,6 +76,10 @@ class AddEventActivity : AppCompatActivity() {
         addEventNext.setOnClickListener {
             start<UnsplashPhotoListActivity>()
         }
+
+        addEventBack.setOnClickListener {
+            onBackPressed()
+        }
     }
 
     private fun ActivityAddEventBinding.initDatePicker(

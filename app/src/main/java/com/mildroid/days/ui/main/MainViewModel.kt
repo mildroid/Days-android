@@ -44,9 +44,9 @@ class MainViewModel @Inject constructor(
             _viewState.value = MainViewState.ViewType(EntryTime.FIRST)
             upcomingEvents()
 
-            /*context.dataStore.edit {
-                it[entryKey] = false
-            }*/
+            context.dataStore.edit {
+                it[booleanPreferencesKey(APP_ENTRY_STATE)] = false
+            }
         } else {
             _viewState.value = MainViewState.ViewType(EntryTime.LAST)
             events()
