@@ -7,6 +7,7 @@ sealed class UnsplashPhotoListViewState {
     object Loading : UnsplashPhotoListViewState()
     data class Data(val photos: List<Photo>?) : UnsplashPhotoListViewState()
     data class Error(val t: Throwable) : UnsplashPhotoListViewState()
+    object Reset : UnsplashPhotoListViewState()
 }
 
 sealed class UnsplashPhotoListStateEvent {

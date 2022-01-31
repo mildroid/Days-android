@@ -8,6 +8,7 @@ import com.mildroid.days.GlideApp
 import com.mildroid.days.databinding.PhotoListItemBinding
 import com.mildroid.days.domain.Photo
 import com.mildroid.days.utils.PhotoListDiffCallback
+import com.mildroid.days.utils.log
 
 class PhotoListAdapter(
     private val onPhotoClick: (Photo) -> Unit
@@ -19,6 +20,19 @@ class PhotoListAdapter(
 
     override fun onBindViewHolder(holder: PhotoListViewHolder, position: Int) {
         holder.bind(getItem(position))
+    }
+
+    override fun submitList(list: List<Photo>?) {
+        "New List Submitted".log(list?.size)
+        list?.let {
+            val newList = mutableListOf<Photo>()
+            newList.addAll(currentList)
+            newList.addAll(list)
+
+            super.submitList(newList)
+        } ?: kotlin.run {
+            super.submitList(list)
+        }
     }
 
     class PhotoListViewHolder(

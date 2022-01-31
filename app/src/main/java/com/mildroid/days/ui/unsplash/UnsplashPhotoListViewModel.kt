@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class UnsplashPhotoListViewHolder @Inject constructor(
+class UnsplashPhotoListViewModel @Inject constructor(
     private val repository: Repository
 
 ) : ViewModel() {
@@ -28,6 +28,8 @@ class UnsplashPhotoListViewHolder @Inject constructor(
 
     private fun photos(page: Int, query: String?) = viewModelScope.launch {
         if (query != lastQuery || query == null) {
+            _viewState.value = UnsplashPhotoListViewState.Reset
+
             lastQuery = query
 
             val result: List<Photo> = if (query == null || query == "") {

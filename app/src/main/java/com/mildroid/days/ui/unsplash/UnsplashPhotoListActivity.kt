@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.mildroid.days.R
 import com.mildroid.days.adapter.ListHeaderAdapter
 import com.mildroid.days.adapter.PhotoListAdapter
@@ -16,6 +17,7 @@ import com.mildroid.days.adapter.SearchHeaderAdapter
 import com.mildroid.days.databinding.ActivitySearchUnsplashBinding
 import com.mildroid.days.domain.state.UnsplashPhotoListStateEvent
 import com.mildroid.days.domain.state.UnsplashPhotoListViewState
+import com.mildroid.days.utils.EndlessRecyclerViewScrollListener
 import com.mildroid.days.utils.fade
 import com.mildroid.days.utils.log
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,30 +38,10 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         }
     }
 
-    private val viewModel: UnsplashPhotoListViewHolder by viewModels()
+    private val viewModel: UnsplashPhotoListViewModel by viewModels()
 
-    private val binding: ActivitySearchUnsplashBinding by lazy {
-        ActivitySearchUnsplashBinding.inflate(layoutInflater)
-    }
-
-    private val photoAdapter by lazy {
-        PhotoListAdapter {
-            it.log()
-        }
-    }
-
-    private var page: Int = 1
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-
-        binding.init()
-        viewModel.onEvent(UnsplashPhotoListStateEvent.Fetch(page = this.page))
-    }
-
-    private fun ActivitySearchUnsplashBinding.init() {
-        val gridLayoutManager = GridLayoutManager(
+    private val gridLayoutManager by lazy {
+        GridLayoutManager(
             this@UnsplashPhotoListActivity,
             3
         ).apply {
@@ -73,10 +55,53 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
+    private val binding: ActivitySearchUnsplashBinding by lazy {
+        ActivitySearchUnsplashBinding.inflate(layoutInflater)
+    }
+
+    private val photoAdapter by lazy {
+        PhotoListAdapter {
+            it.log()
+        }
+    }
+
+    private val scrollListener: EndlessRecyclerViewScrollListener by lazy {
+        object : EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            override fun onLoadMore(
+                page: Int,
+                totalItemsCount: Int,
+                view: RecyclerView?
+            ) {
+                this@UnsplashPhotoListActivity.page = page
+                page.log("page Increased")
+                viewModel.onEvent(
+                    UnsplashPhotoListStateEvent.Fetch(
+                        this@UnsplashPhotoListActivity.page,
+                        this@UnsplashPhotoListActivity.query
+                    )
+                )
+            }
+        }
+    }
+
+    private var page: Int = 1
+    private var query: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(binding.root)
+
+        binding.init()
+        viewModel.onEvent(UnsplashPhotoListStateEvent.Fetch(page = this.page))
+    }
+
+    private fun ActivitySearchUnsplashBinding.init() {
         unsplashPhotoList.apply {
             adapter = providerAdapter()
             layoutManager = gridLayoutManager
+            addOnScrollListener(scrollListener)
         }
     }
 
@@ -88,6 +113,8 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         val searchHeader = SearchHeaderAdapter {
             lifecycleScope.launchWhenResumed {
                 delay(1000)
+
+                this@UnsplashPhotoListActivity.query = it.toString()
                 viewModel.onEvent(UnsplashPhotoListStateEvent.Fetch(page, it.toString()))
             }
         }
@@ -105,6 +132,11 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
                 loading(false)
             }
             UnsplashPhotoListViewState.Loading -> loading(true)
+            UnsplashPhotoListViewState.Reset -> {
+                photoAdapter.submitList(null)
+                scrollListener.resetState()
+                this@UnsplashPhotoListActivity.page = 1
+            }
         }
     }
 
