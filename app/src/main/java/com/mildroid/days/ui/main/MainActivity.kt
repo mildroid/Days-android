@@ -26,9 +26,8 @@ import com.mildroid.days.domain.state.MainStateEvent
 import com.mildroid.days.domain.state.MainViewState
 import com.mildroid.days.ui.add.AddEventActivity
 import com.mildroid.days.ui.event.EventActivity
-import com.mildroid.days.utils.MAIN_VIEW_TYPE
-import com.mildroid.days.utils.log
-import com.mildroid.days.utils.start
+import com.mildroid.days.ui.event.EventViewType
+import com.mildroid.days.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -52,11 +51,12 @@ class MainActivity : AppCompatActivity() {
 
     private val listAdapter by lazy {
         EventListAdapter { event ->
-            event.id.log("id")
             start<EventActivity> {
-                putExtra("event_image", event.image)
-                putExtra("event_title", event.title)
-                putExtra("event_date", event.date.toString())
+                putExtra(EVENT_VIEW_TYPE, EventViewType.VIEW.name)
+                putExtra(EVENT_ID, event.id)
+                putExtra(EVENT_IMAGE, event.image)
+                putExtra(EVENT_TITLE, event.title)
+                putExtra(EVENT_DATE, event.date.toString())
             }
         }
     }

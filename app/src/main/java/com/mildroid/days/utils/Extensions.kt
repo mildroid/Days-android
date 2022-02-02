@@ -36,3 +36,4 @@ fun Iterable<Event>.byDaysRemaining(): List<Event> {
 fun Int.toPx(displayMetrics: DisplayMetrics) = (this * displayMetrics.density)
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = APP_SETTINGS_PREFERENCES)
+val Context.tempDataStore: DataStore<Preferences> by preferencesDataStore(name = APP_TEMP_PREFERENCES)

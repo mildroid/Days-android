@@ -16,4 +16,6 @@ sealed class UnsplashPhotoListStateEvent {
         val page: Int = 1,
         val query: String? = null
     ) : UnsplashPhotoListStateEvent()
+
+    data class PhotoSelected(val photo: Photo): UnsplashPhotoListStateEvent()
 }

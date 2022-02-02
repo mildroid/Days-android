@@ -17,11 +17,14 @@ import com.mildroid.days.adapter.SearchHeaderAdapter
 import com.mildroid.days.databinding.ActivitySearchUnsplashBinding
 import com.mildroid.days.domain.state.UnsplashPhotoListStateEvent
 import com.mildroid.days.domain.state.UnsplashPhotoListViewState
-import com.mildroid.days.utils.EndlessRecyclerViewScrollListener
-import com.mildroid.days.utils.fade
-import com.mildroid.days.utils.log
+import com.mildroid.days.ui.event.EventActivity
+import com.mildroid.days.ui.event.EventViewType
+import com.mildroid.days.utils.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
@@ -63,7 +66,12 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
 
     private val photoAdapter by lazy {
         PhotoListAdapter {
-            it.log()
+            viewModel.onEvent(UnsplashPhotoListStateEvent.PhotoSelected(it))
+
+            start<EventActivity> {
+                putExtra(EVENT_VIEW_TYPE, EventViewType.PREVIEW.name)
+                putExtra( EVENT_IMAGE, it.urls.regular)
+            }
         }
     }
 
@@ -75,7 +83,6 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
                 view: RecyclerView?
             ) {
                 this@UnsplashPhotoListActivity.page = page
-                page.log("page Increased")
                 viewModel.onEvent(
                     UnsplashPhotoListStateEvent.Fetch(
                         this@UnsplashPhotoListActivity.page,

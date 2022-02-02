@@ -7,24 +7,26 @@ import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.DatePicker
 import androidx.activity.viewModels
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.whenResumed
 import com.mildroid.days.databinding.ActivityAddEventBinding
 import com.mildroid.days.ui.unsplash.UnsplashPhotoListActivity
-import com.mildroid.days.utils.ADD_EVENT_INITIAL_DATE
-import com.mildroid.days.utils.daysUntilNow
-import com.mildroid.days.utils.log
-import com.mildroid.days.utils.start
+import com.mildroid.days.utils.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toKotlinLocalDate
 import java.time.MonthDay
 import java.time.Year
 
+@AndroidEntryPoint
 class AddEventActivity : AppCompatActivity() {
 
     private val viewModel: AddEventViewModel by viewModels()
@@ -39,15 +41,7 @@ class AddEventActivity : AppCompatActivity() {
         lifecycleScope.launch {
             launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.desireDate.collect {
-                        desireDate = it
-                        val days = it.daysUntilNow().inWholeDays
-                        if (days != 0L) {
-                            binding.addEventDate.text = "in $days Days"
-                        } else
-                            binding.addEventDate.text = ""
-
-                    }
+                    viewModel.viewState.collect(::stateHandler)
                 }
             }
         }
@@ -74,11 +68,30 @@ class AddEventActivity : AppCompatActivity() {
         initDatePicker()
 
         addEventNext.setOnClickListener {
+            viewModel.onEvent(
+                AddEventStateEvent.SaveTemporaryData(binding.addEventTitle.text.toString())
+            )
             start<UnsplashPhotoListActivity>()
         }
 
         addEventBack.setOnClickListener {
             onBackPressed()
+        }
+    }
+
+    private fun stateHandler(state: AddEventViewState) {
+        when (state) {
+            is AddEventViewState.DesireDate -> {
+                desireDate = state.date
+                val days = desireDate.daysUntilNow().inWholeDays
+                if (days != 0L) {
+                    binding.addEventDate.text = desireDate.toReadableText()
+                } else
+                    binding.addEventDate.text = ""
+            }
+            AddEventViewState.IDLE -> {
+                viewModel.onEvent(AddEventStateEvent.DatePickerSpanned(desireDate))
+            }
         }
     }
 
@@ -91,7 +104,7 @@ class AddEventActivity : AppCompatActivity() {
             date.dayOfMonth
         ) { _, year, monthOfYear, dayOfMonth ->
             val desire = LocalDate(year, monthOfYear + 1, dayOfMonth)
-            viewModel.onDatePickerSpanned(desire)
+            viewModel.onEvent(AddEventStateEvent.DatePickerSpanned(desire))
         }
 
         addEventDatePicker.minDate = System.currentTimeMillis() - 1000

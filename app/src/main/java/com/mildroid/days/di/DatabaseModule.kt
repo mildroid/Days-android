@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.mildroid.days.db.AppDatabase
 import com.mildroid.days.db.EventDao
+import com.mildroid.days.domain.Photo
 import com.mildroid.days.utils.APP_DATABASE_NAME
 import com.mildroid.days.utils.PhotoConverter
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -41,7 +43,7 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun photoConverterProvider(moshi: Moshi): PhotoConverter {
-        return PhotoConverter(moshi)
+    fun photoConverterProvider(photoJsonAdapter: JsonAdapter<Photo>): PhotoConverter {
+        return PhotoConverter(photoJsonAdapter)
     }
 }

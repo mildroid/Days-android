@@ -3,6 +3,7 @@ package com.mildroid.days.utils
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.mildroid.days.domain.Photo
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
@@ -22,12 +23,8 @@ class DateConverter {
 
 @ProvidedTypeConverter
 class PhotoConverter @Inject constructor(
-    private val moshi: Moshi
+    private val photoJsonAdapter: JsonAdapter<Photo>
 ) {
-
-    private val photoJsonAdapter by lazy {
-        moshi.adapter(Photo::class.java)
-    }
 
     @TypeConverter
     fun fromJson(photo: String): Photo? {

@@ -24,14 +24,6 @@ object RemoteModule {
 
     @Singleton
     @Provides
-    fun moshiProvider(): Moshi {
-        return Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-    }
-
-    @Singleton
-    @Provides
     fun retrofitProvider(moshi: Moshi, client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_UNSPLASH_URL)

@@ -43,3 +43,7 @@ fun LocalDate.daysUntilNow() =
             java.time.LocalDate.now().toKotlinLocalDate()
         )
     ).days
+
+fun LocalDate.toReadableText(): String {
+    return "in ${daysUntilNow().inWholeDays} Days"
+}
