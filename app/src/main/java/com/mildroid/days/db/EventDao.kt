@@ -18,4 +18,7 @@ interface EventDao {
 
     @Query("SELECT * FROM events WHERE id = :id")
     suspend fun eventById(id: Int): Event
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun saveEvent(event: Event)
 }

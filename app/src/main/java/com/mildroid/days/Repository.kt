@@ -20,5 +20,7 @@ class Repository @Inject constructor(
 
     suspend fun eventById(id: Int) = dao.eventById(id)
 
-    suspend fun events() = dao.events()
+    suspend fun saveEvent(event: Event) = dao.saveEvent(event)
+
+    fun events() = dao.events()
 }

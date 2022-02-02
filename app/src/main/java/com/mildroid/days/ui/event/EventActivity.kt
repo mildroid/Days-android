@@ -1,19 +1,15 @@
 package com.mildroid.days.ui.event
 
-import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.ImageView
 import androidx.activity.viewModels
+import androidx.core.view.setPadding
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.whenResumed
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import com.mildroid.days.GlideApp
+import com.mildroid.days.R
 import com.mildroid.days.databinding.ActivityEventBinding
 import com.mildroid.days.utils.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,8 +56,13 @@ class EventActivity : AppCompatActivity() {
         }
 
         eventMore.setOnClickListener {
-            EventOptionsBottomSheet()
-                .show(supportFragmentManager, EVENT_OPTIONS_SHEET)
+            if (viewType == EventViewType.VIEW) {
+                EventOptionsBottomSheet()
+                    .show(supportFragmentManager, EVENT_OPTIONS_SHEET)
+            } else {
+                viewModel.onEvent(EventStateEvent.ViewType(EventViewType.VIEW))
+                viewModel.onEvent(EventStateEvent.SaveEvent)
+            }
         }
 
 //        eventDetailsArea.translator()
@@ -79,6 +80,10 @@ class EventActivity : AppCompatActivity() {
                     eventDate.fade(true, root)
                 }
             }
+            is EventViewState.ViewTypeChange -> {
+                viewType = state.viewType
+                handleOperationsArea(state.viewType)
+            }
         }
     }
 
@@ -93,9 +98,7 @@ class EventActivity : AppCompatActivity() {
 
             if (viewType == EventViewType.VIEW) {
                 binding.eventTitle.text = it.getString(EVENT_TITLE)
-
-                val date = LocalDate.parse(it.getString(EVENT_DATE)!!)
-                binding.eventDate.text = date.toReadableText()
+                binding.eventDate.text = LocalDate.parse(it.getString(EVENT_DATE)!!).toReadableText()
 
                 val id = it.getInt(EVENT_ID)
                 viewModel.onEvent(EventStateEvent.Initial(id))
@@ -106,6 +109,8 @@ class EventActivity : AppCompatActivity() {
                     eventDate.fade(false, root)
                 }
             }
+
+            viewModel.onEvent(EventStateEvent.ViewType(viewType))
         }
     }
 
@@ -133,6 +138,41 @@ class EventActivity : AppCompatActivity() {
     private suspend fun showOperationArea() {
         delay(1000)
         binding.eventOperationArea.fade(true, binding.root)
+    }
+
+    private fun handleOperationsArea(type: EventViewType) {
+        binding.eventMore.apply {
+            when (type) {
+                EventViewType.VIEW -> {
+                    gone()
+                    setImageResource(R.drawable.ic_more_24dp)
+                    setPadding(6)
+                    fade(true, binding.root)
+                }
+                EventViewType.PREVIEW -> {
+                    setImageResource(R.drawable.ic_tick_square_white_24dp)
+                    setPadding(16)
+                }
+            }
+        }
+
+        binding.eventShare.apply {
+            when (type) {
+                EventViewType.VIEW -> {
+                    fade(true, binding.root)
+                }
+                EventViewType.PREVIEW -> gone()
+            }
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+        /*when (viewType) {
+            EventViewType.VIEW -> super.onBackPressed()
+            EventViewType.PREVIEW -> TODO()
+        }*/
     }
 }
 

@@ -59,15 +59,16 @@ class EventListAdapter(
                 eventListItemTitle.text = event.title
                 eventListItemDate.text = "in ${event.date.daysUntilNow().inWholeDays} Days"
 
+                val photoUrl = event.image ?: event.photo?.urls?.regular
                 eventListItemImage.addView(
-                    eventImage(itemView.context, event.image!!, imageHeight)
+                    eventImage(itemView.context, photoUrl, imageHeight)
                 )
             }
         }
 
         private fun eventImage(
             context: Context,
-            image: String,
+            image: String?,
             height: Int
         ) = ImageView(context).apply {
             Glide

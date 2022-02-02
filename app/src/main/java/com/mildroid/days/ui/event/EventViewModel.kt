@@ -3,29 +3,31 @@ package com.mildroid.days.ui.event
 import android.app.Application
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.mildroid.days.Repository
 import com.mildroid.days.domain.Event
+import com.mildroid.days.domain.EventType
+import com.mildroid.days.domain.Photo
 import com.mildroid.days.utils.TEMPORARY_EVENT_DATE
+import com.mildroid.days.utils.TEMPORARY_EVENT_PHOTO
 import com.mildroid.days.utils.TEMPORARY_EVENT_TITLE
-import com.mildroid.days.utils.log
 import com.mildroid.days.utils.tempDataStore
+import com.squareup.moshi.JsonAdapter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.datetime.toLocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class EventViewModel @Inject constructor(
     application: Application,
-    private val repository: Repository
+    private val repository: Repository,
+    private val photoJsonAdapter: JsonAdapter<Photo>
 
-): AndroidViewModel(application) {
+    ): AndroidViewModel(application) {
 
     private val _viewState: MutableStateFlow<EventViewState> =
         MutableStateFlow(EventViewState.IDLE)
@@ -40,15 +42,23 @@ class EventViewModel @Inject constructor(
     }
 
     private fun loadEvent() = viewModelScope.launch {
-        val tempEvent = getApplication<Application>()
+        val temp = getApplication<Application>()
             .applicationContext
             .tempDataStore
             .data.first()
 
-        _viewState.value = EventViewState.EventDetails(
-            tempEvent[stringPreferencesKey(TEMPORARY_EVENT_TITLE)]!!,
-            tempEvent[stringPreferencesKey(TEMPORARY_EVENT_DATE)]!!
+        val title = temp[stringPreferencesKey(TEMPORARY_EVENT_TITLE)]!!
+        val date = temp[stringPreferencesKey(TEMPORARY_EVENT_DATE)]!!
+
+        event = Event(
+            title = title,
+            date = date.toLocalDate(),
+            type = EventType.CUSTOM,
+            image = null,
+            photo = photoJsonAdapter.fromJson(temp[stringPreferencesKey(TEMPORARY_EVENT_PHOTO)]!!)
         )
+
+        _viewState.value = EventViewState.EventDetails(title, date)
     }
 
     fun onEvent(event: EventStateEvent) {
@@ -56,6 +66,11 @@ class EventViewModel @Inject constructor(
             is EventStateEvent.Initial -> {
                 if (event.eventId != null) loadEvent(event.eventId)
                 else loadEvent()
+            }
+            is EventStateEvent.ViewType -> _viewState.value =
+                EventViewState.ViewTypeChange(event.type)
+            is EventStateEvent.SaveEvent -> viewModelScope.launch {
+                repository.saveEvent(this@EventViewModel.event)
             }
         }
     }
@@ -65,9 +80,12 @@ sealed class EventViewState {
 
     object IDLE: EventViewState()
     data class EventDetails(val title: String, val date: String): EventViewState()
+    data class ViewTypeChange(val viewType: EventViewType): EventViewState()
 }
 
 sealed class EventStateEvent {
 
     data class Initial(val eventId: Int?): EventStateEvent()
+    data class ViewType(val type: EventViewType): EventStateEvent()
+    object SaveEvent: EventStateEvent()
 }
