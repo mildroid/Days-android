@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             start<EventActivity> {
                 putExtra(EVENT_VIEW_TYPE, EventViewType.VIEW.name)
                 putExtra(EVENT_ID, event.id)
-                putExtra(EVENT_IMAGE, event.image)
+                putExtra(EVENT_IMAGE, event.image ?: event.photo?.urls?.regular)
                 putExtra(EVENT_TITLE, event.title)
                 putExtra(EVENT_DATE, event.date.toString())
             }
