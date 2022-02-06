@@ -36,7 +36,7 @@ class UnsplashPhotoListViewModel @Inject constructor(
     private var lastQuery: String? = null
 
     private fun photos(page: Int, query: String?) = viewModelScope.launch {
-        if (query != lastQuery || query == null) {
+        if (query == null || query != lastQuery) {
             _viewState.value = UnsplashPhotoListViewState.Reset
 
             lastQuery = query
@@ -46,8 +46,6 @@ class UnsplashPhotoListViewModel @Inject constructor(
                     .photoList(page)
 
             } else {
-                lastQuery = query
-
                 repository
                     .searchPhotos(query, page)
             }
@@ -67,6 +65,7 @@ class UnsplashPhotoListViewModel @Inject constructor(
     }
 
     fun onEvent(event: UnsplashPhotoListStateEvent) {
+        event.log("onEvent")
         when (event) {
             is UnsplashPhotoListStateEvent.Fetch -> photos(event.page, event.query?.trim())
             is UnsplashPhotoListStateEvent.PhotoSelected -> saveTempPhoto(event.photo)

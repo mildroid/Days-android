@@ -8,14 +8,12 @@ import com.mildroid.days.Repository
 import com.mildroid.days.domain.Event
 import com.mildroid.days.domain.EventType
 import com.mildroid.days.domain.Photo
-import com.mildroid.days.utils.TEMPORARY_EVENT_DATE
-import com.mildroid.days.utils.TEMPORARY_EVENT_PHOTO
-import com.mildroid.days.utils.TEMPORARY_EVENT_TITLE
-import com.mildroid.days.utils.tempDataStore
+import com.mildroid.days.utils.*
 import com.squareup.moshi.JsonAdapter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toLocalDate
@@ -28,6 +26,10 @@ class EventViewModel @Inject constructor(
     private val photoJsonAdapter: JsonAdapter<Photo>
 
     ): AndroidViewModel(application) {
+
+    init {
+        events()
+    }
 
     private val _viewState: MutableStateFlow<EventViewState> =
         MutableStateFlow(EventViewState.IDLE)
@@ -59,6 +61,16 @@ class EventViewModel @Inject constructor(
         )
 
         _viewState.value = EventViewState.EventDetails(title, date)
+    }
+
+    private fun events() = viewModelScope.launch {
+        repository
+            .events()
+            .collect {
+                it.forEach { event ->
+                    event.log()
+                }
+            }
     }
 
     fun onEvent(event: EventStateEvent) {

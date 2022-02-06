@@ -1,5 +1,6 @@
 package com.mildroid.days.ui.event
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -11,6 +12,7 @@ import androidx.lifecycle.whenResumed
 import com.mildroid.days.GlideApp
 import com.mildroid.days.R
 import com.mildroid.days.databinding.ActivityEventBinding
+import com.mildroid.days.ui.main.MainActivity
 import com.mildroid.days.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -56,19 +58,19 @@ class EventActivity : AppCompatActivity() {
         }
 
         eventMore.setOnClickListener {
-            if (viewType == EventViewType.VIEW) {
+            if (viewType == EventViewType.VIEW || viewType == EventViewType.SAVED) {
                 EventOptionsBottomSheet()
                     .show(supportFragmentManager, EVENT_OPTIONS_SHEET)
             } else {
-                viewModel.onEvent(EventStateEvent.ViewType(EventViewType.VIEW))
-                viewModel.onEvent(EventStateEvent.SaveEvent)
+                viewModel.onEvent(EventStateEvent.ViewType(EventViewType.SAVED))
+//                viewModel.onEvent(EventStateEvent.SaveEvent)
             }
         }
 
 //        eventDetailsArea.translator()
     }
 
-    private fun stateHandler(state: EventViewState) {
+    private suspend fun stateHandler(state: EventViewState) {
         when (state) {
             EventViewState.IDLE -> {}
             is EventViewState.EventDetails -> {
@@ -140,43 +142,51 @@ class EventActivity : AppCompatActivity() {
         binding.eventOperationArea.fade(true, binding.root)
     }
 
-    private fun handleOperationsArea(type: EventViewType) {
+    private suspend fun handleOperationsArea(type: EventViewType) {
         binding.eventMore.apply {
             when (type) {
-                EventViewType.VIEW -> {
-                    gone()
+                EventViewType.SAVED -> {
+                    fade(false, binding.root)
                     setImageResource(R.drawable.ic_more_24dp)
                     setPadding(6)
+
+                    delay(1000)
                     fade(true, binding.root)
                 }
                 EventViewType.PREVIEW -> {
                     setImageResource(R.drawable.ic_tick_square_white_24dp)
                     setPadding(16)
                 }
+                EventViewType.VIEW -> {
+
+                }
             }
         }
 
-        binding.eventShare.apply {
+        /*binding.eventShare.apply {
             when (type) {
                 EventViewType.VIEW -> {
                     fade(true, binding.root)
                 }
                 EventViewType.PREVIEW -> gone()
             }
-        }
+        }*/
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-
-        /*when (viewType) {
-            EventViewType.VIEW -> super.onBackPressed()
-            EventViewType.PREVIEW -> TODO()
-        }*/
+        when (viewType) {
+            EventViewType.VIEW, EventViewType.PREVIEW -> super.onBackPressed()
+            EventViewType.SAVED -> {
+                start<MainActivity> {
+                    this.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+            }
+        }
     }
 }
 
 enum class EventViewType {
     VIEW,
-    PREVIEW
+    PREVIEW,
+    SAVED
 }

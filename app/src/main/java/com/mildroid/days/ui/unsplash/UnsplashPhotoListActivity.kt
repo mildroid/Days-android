@@ -130,6 +130,7 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
     }
 
     private fun stateHandler(state: UnsplashPhotoListViewState) {
+        state.log("stateHandler")
         when (state) {
             is UnsplashPhotoListViewState.Data -> {
                 loading(false)
@@ -140,7 +141,7 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
             }
             UnsplashPhotoListViewState.Loading -> loading(true)
             UnsplashPhotoListViewState.Reset -> {
-                photoAdapter.submitList(null)
+//                photoAdapter.submitList(null)
                 scrollListener.resetState()
                 this@UnsplashPhotoListActivity.page = 1
             }
