@@ -108,7 +108,7 @@ class UnsplashPhotoListActivity : AppCompatActivity() {
         unsplashPhotoList.apply {
             adapter = providerAdapter()
             layoutManager = gridLayoutManager
-            addOnScrollListener(scrollListener)
+//            addOnScrollListener(scrollListener)
         }
     }
 

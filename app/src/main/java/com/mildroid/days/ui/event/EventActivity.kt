@@ -63,7 +63,7 @@ class EventActivity : AppCompatActivity() {
                     .show(supportFragmentManager, EVENT_OPTIONS_SHEET)
             } else {
                 viewModel.onEvent(EventStateEvent.ViewType(EventViewType.SAVED))
-//                viewModel.onEvent(EventStateEvent.SaveEvent)
+                viewModel.onEvent(EventStateEvent.SaveEvent)
             }
         }
 
@@ -177,12 +177,12 @@ class EventActivity : AppCompatActivity() {
         when (viewType) {
             EventViewType.VIEW, EventViewType.PREVIEW -> super.onBackPressed()
             EventViewType.SAVED -> {
-                start<MainActivity> {
-                    this.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                }
+                start<MainActivity>()
+                finishAffinity()
             }
         }
     }
+
 }
 
 enum class EventViewType {
