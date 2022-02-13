@@ -13,7 +13,6 @@ import com.squareup.moshi.JsonAdapter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toLocalDate
@@ -25,7 +24,7 @@ class EventViewModel @Inject constructor(
     private val repository: Repository,
     private val photoJsonAdapter: JsonAdapter<Photo>
 
-    ): AndroidViewModel(application) {
+) : AndroidViewModel(application) {
 
     init {
         events()
@@ -59,8 +58,6 @@ class EventViewModel @Inject constructor(
             image = null,
             photo = photoJsonAdapter.fromJson(temp[stringPreferencesKey(TEMPORARY_EVENT_PHOTO)]!!)
         )
-
-        _viewState.value = EventViewState.EventDetails(title, date)
     }
 
     private fun events() = viewModelScope.launch {
@@ -75,12 +72,17 @@ class EventViewModel @Inject constructor(
 
     fun onEvent(event: EventStateEvent) {
         when (event) {
-            is EventStateEvent.Initial -> {
+            is EventStateEvent.Init -> {
                 if (event.eventId != null) loadEvent(event.eventId)
                 else loadEvent()
             }
-            is EventStateEvent.ViewType -> _viewState.value =
-                EventViewState.ViewTypeChange(event.type)
+
+            is EventStateEvent.ChangeViewType -> _viewState.value =
+                if (event.type == EventViewType.PREVIEW)
+                    EventViewState.ViewType(event.type, this.event)
+
+                else EventViewState.ViewType(event.type)
+
             is EventStateEvent.SaveEvent -> viewModelScope.launch {
                 repository.saveEvent(this@EventViewModel.event)
             }
@@ -90,14 +92,13 @@ class EventViewModel @Inject constructor(
 
 sealed class EventViewState {
 
-    object IDLE: EventViewState()
-    data class EventDetails(val title: String, val date: String): EventViewState()
-    data class ViewTypeChange(val viewType: EventViewType): EventViewState()
+    object IDLE : EventViewState()
+    data class ViewType(val viewType: EventViewType, val event: Event? = null) : EventViewState()
 }
 
 sealed class EventStateEvent {
 
-    data class Initial(val eventId: Int?): EventStateEvent()
-    data class ViewType(val type: EventViewType): EventStateEvent()
-    object SaveEvent: EventStateEvent()
+    data class Init(val eventId: Int?) : EventStateEvent()
+    data class ChangeViewType(val type: EventViewType) : EventStateEvent()
+    object SaveEvent : EventStateEvent()
 }

@@ -1,30 +1,20 @@
 package com.mildroid.days.ui.add
 
 import android.content.Context
-import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
-import android.widget.DatePicker
 import androidx.activity.viewModels
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.whenResumed
 import com.mildroid.days.databinding.ActivityAddEventBinding
 import com.mildroid.days.ui.unsplash.UnsplashPhotoListActivity
 import com.mildroid.days.utils.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toKotlinLocalDate
-import java.time.MonthDay
-import java.time.Year
 
 @AndroidEntryPoint
 class AddEventActivity : AppCompatActivity() {
@@ -85,7 +75,7 @@ class AddEventActivity : AppCompatActivity() {
                 desireDate = state.date
                 val days = desireDate.daysUntilNow().inWholeDays
                 if (days != 0L) {
-                    binding.addEventDate.text = desireDate.toReadableText()
+                    binding.addEventDate.text = desireDate.inDaysRemaining()
                 } else
                     binding.addEventDate.text = ""
             }

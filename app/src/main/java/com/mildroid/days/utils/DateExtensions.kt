@@ -44,6 +44,6 @@ fun LocalDate.daysUntilNow() =
         )
     ).days
 
-fun LocalDate.toReadableText(): String {
+fun LocalDate.inDaysRemaining(): String {
     return "in ${daysUntilNow().inWholeDays} Days"
 }

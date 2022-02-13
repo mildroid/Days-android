@@ -1,6 +1,5 @@
 package com.mildroid.days.ui.event
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -9,6 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.whenResumed
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.mildroid.days.GlideApp
 import com.mildroid.days.R
 import com.mildroid.days.databinding.ActivityEventBinding
@@ -62,7 +62,7 @@ class EventActivity : AppCompatActivity() {
                 EventOptionsBottomSheet()
                     .show(supportFragmentManager, EVENT_OPTIONS_SHEET)
             } else {
-                viewModel.onEvent(EventStateEvent.ViewType(EventViewType.SAVED))
+                viewModel.onEvent(EventStateEvent.ChangeViewType(EventViewType.SAVED))
                 viewModel.onEvent(EventStateEvent.SaveEvent)
             }
         }
@@ -73,17 +73,17 @@ class EventActivity : AppCompatActivity() {
     private suspend fun stateHandler(state: EventViewState) {
         when (state) {
             EventViewState.IDLE -> {}
-            is EventViewState.EventDetails -> {
-                binding.run {
-                    eventTitle.text = state.title
-                    eventDate.text = LocalDate.parse(state.date).toReadableText()
-
-                    eventTitle.fade(true, root)
-                    eventDate.fade(true, root)
-                }
-            }
-            is EventViewState.ViewTypeChange -> {
+            is EventViewState.ViewType -> {
                 viewType = state.viewType
+                if (viewType == EventViewType.PREVIEW) {
+                    binding.run {
+                        eventTitle.text = state.event?.title
+                        eventDate.text = state.event?.date?.inDaysRemaining()
+
+                        eventTitle.fade(true, root)
+                        eventDate.fade(true, root)
+                    }
+                }
                 handleOperationsArea(state.viewType)
             }
         }
@@ -96,23 +96,24 @@ class EventActivity : AppCompatActivity() {
             val image = it.getString(EVENT_IMAGE)
             GlideApp.with(this@EventActivity)
                 .load(image)
+                .transition(DrawableTransitionOptions.withCrossFade(350))
                 .into(binding.eventImage)
 
             if (viewType == EventViewType.VIEW) {
                 binding.eventTitle.text = it.getString(EVENT_TITLE)
-                binding.eventDate.text = LocalDate.parse(it.getString(EVENT_DATE)!!).toReadableText()
+                binding.eventDate.text = LocalDate.parse(it.getString(EVENT_DATE)!!).inDaysRemaining()
 
                 val id = it.getInt(EVENT_ID)
-                viewModel.onEvent(EventStateEvent.Initial(id))
+                viewModel.onEvent(EventStateEvent.Init(id))
             } else {
-                viewModel.onEvent(EventStateEvent.Initial(null))
+                viewModel.onEvent(EventStateEvent.Init(null))
                 binding.run {
                     eventTitle.fade(false, root)
                     eventDate.fade(false, root)
                 }
             }
 
-            viewModel.onEvent(EventStateEvent.ViewType(viewType))
+            viewModel.onEvent(EventStateEvent.ChangeViewType(viewType))
         }
     }
 
@@ -153,13 +154,13 @@ class EventActivity : AppCompatActivity() {
                     delay(1000)
                     fade(true, binding.root)
                 }
+
                 EventViewType.PREVIEW -> {
                     setImageResource(R.drawable.ic_tick_square_white_24dp)
                     setPadding(16)
                 }
-                EventViewType.VIEW -> {
 
-                }
+                EventViewType.VIEW -> {}
             }
         }
 
