@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
 import androidx.activity.viewModels
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.setMargins
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -58,10 +61,12 @@ class AddEventActivity : AppCompatActivity() {
         initDatePicker()
 
         addEventNext.setOnClickListener {
-            viewModel.onEvent(
-                AddEventStateEvent.SaveTemporaryData(binding.addEventTitle.text.toString())
-            )
-            start<UnsplashPhotoListActivity>()
+            if (isReady()) {
+                viewModel.onEvent(
+                    AddEventStateEvent.SaveTemporaryData(binding.addEventTitle.text.toString())
+                )
+                start<UnsplashPhotoListActivity>()
+            }
         }
 
         addEventBack.setOnClickListener {
@@ -98,6 +103,29 @@ class AddEventActivity : AppCompatActivity() {
         }
 
         addEventDatePicker.minDate = System.currentTimeMillis() - 1000
+    }
+
+    private fun isReady(): Boolean {
+        binding.addEventTitle.run {
+            val titleCheck = text?.toString()?.length!! <= 1
+            val dateCheck = desireDate.daysUntilNow().inWholeDays == 0L
+
+            if (titleCheck && dateCheck) {
+                hint = "Every event should have a title and date!"
+                return false
+            }
+
+            if (titleCheck) {
+                hint = "Every event should have a title!"
+                return false
+
+            } else if (dateCheck) {
+                hint = "Event event should have a date!"
+                return false
+            }
+        }
+
+        return true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

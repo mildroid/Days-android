@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
+import com.google.android.material.snackbar.Snackbar
 import com.mildroid.days.R
 
 fun View.gone() {
@@ -99,4 +100,13 @@ val Fragment.dp16: Int
 
 fun Fragment.dp(value: Int): Int {
     return value.toPx(resources.displayMetrics).toInt()
+}
+
+fun View.snack(
+    msg: CharSequence,
+    duration: Int = Snackbar.LENGTH_SHORT
+) = Snackbar.make(this, msg, duration).also { it.show() }
+
+inline fun Snackbar.action(text: CharSequence, crossinline onClick: () -> Unit) {
+    setAction(text) { onClick() }
 }
